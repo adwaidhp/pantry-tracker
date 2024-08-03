@@ -4,7 +4,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Pantry Tracker",
+  title: "Pantry Tracker and Recipe Maker",
   description: "A pantry tracker app made using next js",
 };
 
