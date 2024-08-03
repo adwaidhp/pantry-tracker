@@ -7,6 +7,7 @@ import {
   onSnapshot,
   doc,
   deleteDoc,
+  getDocs,  
 } from "firebase/firestore";
 import { db } from "./firebase";
 import OpenAI from "openai";
@@ -29,19 +30,16 @@ export default function Home() {
       setNewItem({ name: "", count: "" });
     }
   };
-
   // Function to clear the entire database
-  const clearDatabase = async () => {
-    if (window.confirm("Are you sure you want to clear the database?")) {
-      const q = query(collection(db, "items"));
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        querySnapshot.forEach(async (docSnapshot) => {
-          await deleteDoc(doc(db, "items", docSnapshot.id));
-        });
-      });
-      unsubscribe();
-    }
-  };
+const clearDatabase = async () => {
+  if (window.confirm("Are you sure you want to clear the database?")) {
+    const q = query(collection(db, "items"));
+    const querySnapshot = await getDocs(q); // Fetch all documents
+    querySnapshot.forEach(async (docSnapshot) => {
+      await deleteDoc(doc(db, "items", docSnapshot.id));
+    });
+  }
+};
 
   // Read items from the database
   useEffect(() => {
@@ -83,8 +81,6 @@ export default function Home() {
     setLoading(true);
     const itemNames = items.map((item) => item.name).join(",");
     const chatCompletion = await getapires(itemNames);
-    console.log(`${itemNames}`);
-    console.log(chatCompletion.choices[0]?.message?.content);
     setRecipeSuggestions(chatCompletion.choices[0]?.message?.content || "");
     setLoading(false);
   };
