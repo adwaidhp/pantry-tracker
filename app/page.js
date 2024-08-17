@@ -7,10 +7,11 @@ import {
   onSnapshot,
   doc,
   deleteDoc,
-  getDocs,  
+  getDocs,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import OpenAI from "openai";
+import Groq from "groq-sdk";
 
 export default function Home() {
   const [items, setItems] = useState([]);
@@ -31,15 +32,15 @@ export default function Home() {
     }
   };
   // Function to clear the entire database
-const clearDatabase = async () => {
-  if (window.confirm("Are you sure you want to clear the database?")) {
-    const q = query(collection(db, "items"));
-    const querySnapshot = await getDocs(q); // Fetch all documents
-    querySnapshot.forEach(async (docSnapshot) => {
-      await deleteDoc(doc(db, "items", docSnapshot.id));
-    });
-  }
-};
+  const clearDatabase = async () => {
+    if (window.confirm("Are you sure you want to clear the database?")) {
+      const q = query(collection(db, "items"));
+      const querySnapshot = await getDocs(q); // Fetch all documents
+      querySnapshot.forEach(async (docSnapshot) => {
+        await deleteDoc(doc(db, "items", docSnapshot.id));
+      });
+    }
+  };
 
   // Read items from the database
   useEffect(() => {
@@ -70,9 +71,9 @@ const clearDatabase = async () => {
   };
 
   // OpenAI configuration for generating recipes
-  const openai = new OpenAI({
-    baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+
+  const groq = new Groq({
+    apiKey: process.env.NEXT_PUBLIC_GROQ_API_KEY,
     dangerouslyAllowBrowser: true,
   });
 
@@ -87,8 +88,8 @@ const clearDatabase = async () => {
 
   // Function to get API response from OpenAI
   async function getapires(itemNames) {
-    return openai.chat.completions.create({
-      model: "meta-llama/llama-3.1-8b-instruct:free ",
+    return groq.chat.completions.create({
+      model: "llama3-8b-8192",
       messages: [
         {
           role: "user",
@@ -96,7 +97,7 @@ const clearDatabase = async () => {
 
 Ingredients: ${itemNames}
 
-There should be no asterisks in the output, dont use markdown format
+There should be no asterisks in the output, dont use markdown format, just use paragraph spacing well. Add numbering for instructions and ingredients.
 Please ensure the recipe is suitable for someone with moderate cooking skills and provides an estimated cooking time.
 
 Format:
